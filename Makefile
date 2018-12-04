@@ -1,3 +1,19 @@
+#   Copyright 2018 Alexander Shuping
+#
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+#
+# Makefile for sample project
+
 include common.makerules
 
 PNAME=project
@@ -26,9 +42,6 @@ $(PNAME).hex : $(PNAME).c $(OTHER_MODULES)
 	echo "$(T_HEX) $(PNAME).elf -> $(PNAME).hex"
 	avr-objcopy -j .text -j .data -O ihex $(PNAME).elf $(PNAME).hex
 
-TERM: 
-	avrdude -p atmega328p -c avrisp -b 19200 -P /dev/ttyUSB0 -t
-
 iic.o: iic.c
 	echo "$(T_COMP) iic.c -> iic.o"
 	avr-gcc -Wall -g --std=c11 -Os -mmcu=atmega328p -c iic.c
@@ -37,6 +50,10 @@ iic.o: iic.c
 UPLOAD : $(PNAME).hex
 	echo "$(T_UPL) $(PNAME).hex"
 	avrdude -p atmega328p -c avrisp -b 19200 -P /dev/ttyUSB0 -U flash:w:$(PNAME).hex
+
+TERM: 
+	avrdude -p atmega328p -c avrisp -b 19200 -P /dev/ttyUSB0 -t
+
 
 ################
 # Util Targets #
