@@ -151,7 +151,6 @@ ISR(TWI_vect){
 			}
 
 			TWDR = (IIC_MODULE.remote_addr_buf << 1) | (read_mode << 0);
-			IIC_MODULE.retry_count = 0;
 			TWCR = TWCR_NEXT;
 			break;
 		
@@ -203,7 +202,7 @@ ISR(TWI_vect){
 			if(IIC_MODULE.retry_count++ >= IIC_MODULE.retry_max){
 				// If we're out of retries, abort
 				IIC_MODULE.retry_count = 0;
-				IIC_MODULE.error_state = IIC_MR_DATA_NACK;
+				IIC_MODULE.error_state = IIC_MT_DATA_NACK;
 				IIC_MODULE.state = IIC_IDLE;
 				IIC_MODULE.intent = IIC_IDLE;
 				TWCR = TWCR_STOP;
@@ -243,7 +242,7 @@ ISR(TWI_vect){
 
 		case TW_MR_SLA_NACK: // no slave is acknowledging - retry or abort
 			if(IIC_MODULE.retry_count++ >= IIC_MODULE.retry_max){
-				IIC_MODULE.error_state = IIC_MT_ADDR_NACK;
+				IIC_MODULE.error_state = IIC_MR_ADDR_NACK;
 				IIC_MODULE.state = IIC_IDLE;
 				IIC_MODULE.intent = IIC_IDLE;
 				IIC_MODULE.retry_count = 0;

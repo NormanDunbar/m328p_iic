@@ -137,7 +137,10 @@ int main(void){
 	sei();
 
 	#ifndef SLAVE
-	out_string("\033[2J\033[HUSART connection online.\n\r * Type a number to change flash rate.\n\r * Type 'a' to send data to remote 1; type 'b' to send data to remote 2; type 'c' to send data to general-call.\n\r");
+	out_string("\033[2J\033[HUSART connection online.\n\r * Type a number to change flash rate.\n\r * Type 'a' to send data to remote 1; type 'b' to send data to remote 2; type 'c' to send data to general-call.\n\n\r === ERROR MESSAGES DISPLAYED BELOW === \n\n\r");
+
+	_delay_ms(150); // give slave devices time to get ready
+
 	#endif
 
 	uint8_t dat = 0;
@@ -146,28 +149,36 @@ int main(void){
 		#ifdef MASTER_MODE
 		PORTB &= ~((1 << PB1) | (1 << PB2) | (1 << PB3));
 		PORTB |= (1 << PB4);
-		iic_clear_error();
+		PORTD &= ~((1 << PD7) | (1 << PD5));
+
 		iic_write_one(dest_addr, sine_lut[dat]);
 		while(IIC_MODULE.state != IIC_IDLE);
 		if(IIC_MODULE.error_state != IIC_NO_ERROR){
-			PORTD = PORTD ^ (1 << PD5);
+			PORTD |= (1 << PD5);
 			PORTB |= (1 << PB3);
+			out_string("IIC error on write - type ");
+			out_char(IIC_MODULE.error_state + 'A' - 1);
+			out_string("!\n\r");
 			iic_clear_error();
 		}else{
 			PORTD |= (1 << PD7);
 		}
-		iic_clear_error();
+
 		if(dest_addr != GEN_CALL){ // can't read gencall
 			iic_read_one(dest_addr);
 			while(IIC_MODULE.state != IIC_IDLE);
 			if(IIC_MODULE.error_state != IIC_NO_ERROR){
-				PORTD = PORTD ^ (1 << PD5);
+				out_string("IIC error on read - type ");
+				out_char(IIC_MODULE.error_state + 'A' - 1);
+				out_string("!\n\r");
+				PORTD |= (1 << PD5);
 				PORTB |= (1 << PB1);
 				iic_clear_error();
 			}else{
 				if(IIC_MODULE.data_buf != sine_lut[dat]){
 					PORTD |= (1 << PD5);
 					PORTB |= (1 << PB2);
+					out_string("IIC - read value did not match write!\n\r");
 				}
 			}
 		}

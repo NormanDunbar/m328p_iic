@@ -45,19 +45,19 @@ typedef enum{
 } iic_state_t;
 
 typedef enum{
-	IIC_NO_ERROR,
-	IIC_MT_ARBITRATION_LOST,
-	IIC_MR_ARBITRATION_LOST,
-	IIC_ARBITRATION_LOST_AND_ST_SELECTED,
-	IIC_ARBITRATION_LOST_AND_SR_SELECTED,
-	IIC_MT_ADDR_NACK,
-	IIC_MT_DATA_NACK,
-	IIC_MR_ADDR_NACK,
-	IIC_MR_DATA_NACK,
-	IIC_ST_DATA_NACK,
-	IIC_SR_DATA_NACK,
-	IIC_SR_STOP,
-	IIC_BUS_ERROR
+	IIC_NO_ERROR,                         // Error type codes
+	IIC_MT_ARBITRATION_LOST,              // A
+	IIC_MR_ARBITRATION_LOST,              // B
+	IIC_ARBITRATION_LOST_AND_ST_SELECTED, // C
+	IIC_ARBITRATION_LOST_AND_SR_SELECTED, // D
+	IIC_MT_ADDR_NACK,                     // E
+	IIC_MT_DATA_NACK,                     // F
+	IIC_MR_ADDR_NACK,                     // G
+	IIC_MR_DATA_NACK,                     // H
+	IIC_ST_DATA_NACK,                     // I
+	IIC_SR_DATA_NACK,                     // J
+	IIC_SR_STOP,                          // K
+	IIC_BUS_ERROR                         // L
 } iic_error_t;
 
 typedef struct iic_t{
