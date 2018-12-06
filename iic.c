@@ -178,7 +178,7 @@ ISR(TWI_vect){
 				IIC_MODULE.retry_count = 0;
 				TWCR = TWCR_STOP;
 			}else{
-				TWCR = TWCR_START; // retry
+				TWCR = TWCR_START | TWCR_NEXT; // retry
 			}
 			break;
 
@@ -249,7 +249,7 @@ ISR(TWI_vect){
 				IIC_MODULE.retry_count = 0;
 				TWCR = TWCR_STOP;
 			}else{
-				TWCR = TWCR_START; // retry
+				TWCR = TWCR_START | TWCR_NEXT; // retry
 			}
 			break;
 
