@@ -21,8 +21,8 @@
 #include <avr/interrupt.h>
 #include <util/twi.h>
 
-#include "iic.h"
-#include "common.h"
+#include <iic/iic.h>
+#include <iic/common.h>
 
 void setup_iic(
 	uint8_t address, 
@@ -31,7 +31,7 @@ void setup_iic(
 	uint8_t bitrate,
 	iic_prescaler_t bitrate_prescaler,
 	uint8_t retry_max,
-	uint8_t (*callback)(iic_t *iic, uint8_t received_data)
+	uint8_t (*callback)(volatile iic_t *iic, uint8_t received_data)
 ){
 	IIC_MODULE.state = IIC_DISCONNECTED;
 	IIC_MODULE.slave_enable = slave_enable;
@@ -159,7 +159,7 @@ ISR(TWI_vect){
 		// Master-transmitter mode
 		// ================================================================
 		case TW_MT_SLA_ACK: // slave is acknowledging address - send data
-			if(IIC_MODULE.transaction_len < 2){
+			if(IIC_MODULE.transaction_len <= 2){
 				TWDR = IIC_MODULE.data_buf;
 				IIC_MODULE.data_buf_index++;
 			}else{
@@ -356,9 +356,9 @@ ISR(TWI_vect){
 			TWCR = TWCR_NEXT;
 			break;
 
-		case TW_SR_DATA_NACK: // master didn't send data - set an error flag, but continue
+		case TW_SR_DATA_NACK: // we NACK'ed this byte to indicate EOT - continue, but set error flag.
 		case TW_SR_GCALL_DATA_NACK:
-			IIC_MODULE.error_state = IIC_SR_DATA_NACK; 
+			IIC_MODULE.error_state = IIC_SR_DATA_NACK;
 		case TW_SR_DATA_ACK: // call the callback function with the returned data
 		case TW_SR_GCALL_DATA_ACK:
 			IIC_MODULE.callback(&IIC_MODULE, TWDR);
@@ -367,8 +367,8 @@ ISR(TWI_vect){
 			// Check for this condition by seeing if the error state is IIC_ARBITRATION_LOST_AND_SR_SELECTED
 			// AND that the intent state is IIC_MASTER_TRANSMITTER.
 			
-			IIC_MODULE.state = IIC_IDLE;
-			IIC_MODULE.intent = IIC_IDLE;
+			IIC_MODULE.state = IIC_SLAVE_RECEIVER_WAITING;
+			IIC_MODULE.intent = IIC_SLAVE_RECEIVER_WAITING;
 			IIC_MODULE.data_ready = true;
 			TWCR = TWCR_NEXT;
 			break;

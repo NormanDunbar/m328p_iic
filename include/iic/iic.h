@@ -17,8 +17,19 @@
  * function headers, enums, defines, structs for the iic library
  */
 
+#pragma once
 #include <avr/io.h>
-#include "common.h"
+#include <iic/common.h>
+
+#ifdef __AVR_ATmega328PB__
+// The 328PB has 2 iic modules - we're only using one
+	#define TWCR TWCR0
+	#define TWDR TWDR0
+	#define TWSR TWSR0
+	#define TWAR TWAR0
+	#define TWBR TWBR0
+	#define TWI_vect TWI0_vect
+#endif
 
 #define TWCR_ENABLE (1 << TWEN) | (1 << TWIE) | (1 << TWEA)
 #define TWCR_DISABLE 0
@@ -38,6 +49,7 @@ typedef enum{
 	IIC_TRYING_TO_SEIZE_BUS,
 	IIC_SLAVE_TRANSMITTER,
 	IIC_SLAVE_RECEIVER,
+	IIC_SLAVE_RECEIVER_WAITING,
 	IIC_MASTER_TRANSMITTER,
 	IIC_MASTER_RECEIVER,
 	IIC_IDLE,
@@ -75,7 +87,7 @@ typedef struct iic_t{
 	uint8_t     transaction_len; // number of bytes left to tx/rx this transaction
 	uint8_t     retry_max; // number of times to retry a data transmission before giving up
 	uint8_t     retry_count; // number of times the current data transmission has been retried
-	uint8_t (*callback)(struct iic_t*, uint8_t); // callback function for slave functionality
+	uint8_t (*callback)(volatile struct iic_t*, uint8_t); // callback function for slave functionality
 } iic_t;
 
 volatile iic_t IIC_MODULE;
@@ -87,7 +99,7 @@ void setup_iic(
 	uint8_t bitrate,
 	iic_prescaler_t bitrate_prescaler, 
 	uint8_t retry_max,
-	uint8_t (*callback)(iic_t *iic, uint8_t received_data)
+	uint8_t (*callback)(volatile iic_t *iic, uint8_t received_data)
 	);
 
 void enable_iic();

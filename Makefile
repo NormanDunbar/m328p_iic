@@ -16,23 +16,22 @@
 
 include common.makerules
 
-PNAME=project
-
-OTHER_MODULES=iic.o
-
 #####################################################
 # Silent mode by default                            #
 # (set the environment variable VERBOSE to override #
 #####################################################
-#ifndef VERBOSE
-#.SILENT:
-#endif
+ifndef VERBOSE
+.SILENT:
+endif
 
 #####################
 # Default Target    #
 # Makes all modules #
 # (no unit tests)   #
 #####################
+TOP: lib/iic.o
+	echo "$(T_C)library build done."
+
 # Builds all modules and runs the final executable
 $(PNAME).hex : $(PNAME).c $(OTHER_MODULES)
 	echo "$(T_COMP) $(PNAME).c -> $(PNAME).o"
@@ -42,10 +41,15 @@ $(PNAME).hex : $(PNAME).c $(OTHER_MODULES)
 	echo "$(T_HEX) $(PNAME).elf -> $(PNAME).hex"
 	avr-objcopy -j .text -j .data -O ihex $(PNAME).elf $(PNAME).hex
 
-iic.o: iic.c
-	echo "$(T_COMP) iic.c -> iic.o"
-	avr-gcc -Wall -g --std=c11 -Os -mmcu=atmega328p -c iic.c
+build/iic.o: src/iic.c build
+	echo "$(T_COMP) src/iic.c -> build/iic.o"
+	avr-gcc -Wall -g --std=c11 -Iinclude/ -Os -mmcu=atmega328p -c src/iic.c -o lib/iic.o
 
+build:
+	mkdir build
+
+lib:
+	mkdir lib
 
 UPLOAD : $(PNAME).hex
 	echo "$(T_UPL) $(PNAME).hex"
@@ -60,4 +64,4 @@ TERM:
 ################
 # Cleans up compiled object files / binaries
 clean :
-	-rm $(PNAME).o $(PNAME).hex $(PNAME).elf
+	-rm -r project.o project.hex project.elf lib
