@@ -20,7 +20,7 @@
 #pragma once
 #include <iic/common.h>
 
-typedef uint8_t IIC_COMMAND_t; //TODO left off here
+typedef uint8_t IIC_COMMAND_t;
 
 //===========================================================================//
 //== Dynamic-address-allocation commands                                   ==//
@@ -101,6 +101,70 @@ typedef uint8_t IIC_COMMAND_t; //TODO left off here
  * purpose: set the pattern for an LED device to use.
  */
 #define IIC_COMMAND_LED_SET_PATTERN 0x21
+
+/* IIC_COMMAND_LED_INCLUDE_DEVICE
+ * target address: any except general-call
+ * length: 1
+ * syntax: [ command | PHASE ]
+ * purpose: inform a device that, at the next SYNCHRONIZE command, it
+ *          should immediately jump to the position "`PHASE`" in its
+ *          current waveform.
+ */
+#define IIC_COMMAND_LED_INCLUDE_DEVICE 0x26
+
+/* IIC_COMMAND_LED_EXCLUDE_DEVICE
+ * target address: any except general-call
+ * length: 0
+ * syntax: [ command ]
+ * purpose: inform a device that it should ignore the next SYNCHRONIZE
+ *          command, even if it is an INCLUSIVE_SYNCHRONIZE.
+ */
+#define IIC_COMMAND_LED_EXCLUDE_DEVICE 0x27
+
+/* IIC_COMMAND_LED_INCLUDE_GROUP
+ * target address: 0x00 (general-call) ONLY
+ * length: 2
+ * syntax: [ command | GROUP_ID | PHASE ]
+ * purpose: as IIC_COMMAND_LED_INCLUDE_DEVICE, except it targets all 
+ *          devices in the group `GROUP_ID`, rather than a single device.
+ */
+#define IIC_COMMAND_LED_INCLUDE_GROUP 0x28
+
+/* IIC_COMMAND_LED_EXCLUDE_GROUP
+ * target address: 0x00 (general-call) ONLY
+ * length: 1
+ * syntax: [ command | GROUP_ID ]
+ * purpose: as IIC_COMMAND_LED_EXCLUDE_DEVICE, except it targets all
+ *          devices in the group `GROUP_ID`, rather than a single device.
+ */
+#define IIC_COMMAND_LED_EXCLUDE_GROUP 0x29
+
+/* IIC_COMMAND_LED_INCLUSIVE_SYNCRONIZE
+ * target address: 0x00 (general-call) ONLY
+ * length: 1
+ * syntax: [ command | PHASE ]
+ * purpose: informs all devices that they should immediately jump to the
+ *          offset `PHASE` in their waveforms, unless they have been
+ *          specifically excluded with IIC_COMMAND_LED_EXCLUDE_DEVICE or
+ *          IIC_COMMAND_LED_EXCLUDE_GROUP.
+ * note: if a device was included with IIC_COMMAND_LED_INCLUDE_DEVICE or
+ *       IIC_COMMAND_LED_INCLUDE_GROUP, and the `PHASE` specified in that
+ *       command is different from the `PHASE` specified in this command,
+ *       the `PHASE` from the INCLUDE command will be used instead of
+ *       the `PHASE` from the SYNCHRONIZE command.
+ */
+#define IIC_COMMAND_LED_INCLUSIVE_SYNCHRONIZE 0x2A
+
+/* IIC_COMMAND_LED_EXCLUSIVE_SYNCHRONIZE
+ * target address: 0x00 (general-call) ONLY
+ * length: 0
+ * syntax: [ command ]
+ * purpose: informs devices which were previously included with the 
+ *          IIC_COMMAND_LED_INCLUDE_DEVICE or IIC_COMMAND_LED_INCLUDE_GROUP
+ *          commands that they should immediately jump to an offset in 
+ *          their waveform as specified by the INCLUDE command.
+ */
+#define IIC_COMMAND_LED_EXCLUSIVE_SYNCHRONIZE 0x2B
 
 #ifdef ADDRESS_SERVER
 bool handle_address_negotiation(uint8_t command);
